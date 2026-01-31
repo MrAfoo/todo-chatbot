@@ -23,13 +23,13 @@ Create `.env` files with the **SAME SECRET KEY** in both:
 **backend/.env**:
 ```bash
 DATABASE_URL=postgresql://postgres:password@localhost:5432/todo_db
-BETTER_AUTH_SECRET=GvSMuC-gmvv2vlKK2hmNrRTgf9M0tJCS
+BETTER_AUTH_SECRET=your-secret-key-min-32-chars-long-change-in-production
 ```
 
 **frontend/.env.local**:
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:8000
-BETTER_AUTH_SECRET=GvSMuC-gmvv2vlKK2hmNrRTgf9M0tJCS
+BETTER_AUTH_SECRET=your-secret-key-min-32-chars-long-change-in-production
 DATABASE_URL=postgresql://postgres:password@localhost:5432/todo_db
 ```
 
@@ -314,8 +314,4 @@ This project is built following the Spec-Kit Plus methodology.
 3. Update documentation as needed
 4. Ensure all tests pass before committing
 
----
 
-## 📝 Note on Original CLI App
-
-The original CLI application is available in `src/` directory for reference but is no longer actively maintained. The web application is the primary implementation.
