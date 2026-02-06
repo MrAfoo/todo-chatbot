@@ -2,6 +2,14 @@
 
 from app.schemas.user import UserCreate, UserResponse, UserLogin, Token
 from app.schemas.task import TaskCreate, TaskUpdate, TaskResponse
+from app.schemas.conversation import (
+    ConversationMessageCreate,
+    ConversationMessageResponse,
+    ConversationCreate,
+    ConversationResponse,
+    ChatRequest,
+    ChatResponse,
+)
 
 __all__ = [
     "UserCreate",
@@ -11,4 +19,10 @@ __all__ = [
     "TaskCreate",
     "TaskUpdate",
     "TaskResponse",
+    "ConversationMessageCreate",
+    "ConversationMessageResponse",
+    "ConversationCreate",
+    "ConversationResponse",
+    "ChatRequest",
+    "ChatResponse",
 ]

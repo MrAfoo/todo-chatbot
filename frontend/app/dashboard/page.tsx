@@ -6,11 +6,9 @@ import { betterAuthWrapper } from "@/lib/auth-wrapper";
 import { useTasks } from "@/hooks/useTasks";
 import TaskList from "@/components/tasks/TaskList";
 import TaskForm from "@/components/tasks/TaskForm";
-import dynamic from "next/dynamic";
-
-const ThemeToggle = dynamic(() => import("@/components/ThemeToggle"), {
-  ssr: false,
-});
+import Navigation from "@/components/Navigation";
+import ParticleEffect from "@/components/ParticleEffect";
+import GlitchText from "@/components/GlitchText";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -33,11 +31,11 @@ export default function DashboardPage() {
 
   if (isPending) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center animate-pulse-subtle">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 mb-4">
+      <div className="flex min-h-screen items-center justify-center bg-terminal-bg">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded border-2 border-neon-green mb-4 animate-pulse-glow bg-terminal-bgLight">
             <svg
-              className="animate-spin h-8 w-8 text-white"
+              className="animate-spin h-8 w-8 text-neon-green"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -57,7 +55,7 @@ export default function DashboardPage() {
               ></path>
             </svg>
           </div>
-          <p className="text-gray-600 dark:text-gray-400">Loading your workspace...</p>
+          <p className="text-neon-cyan font-mono">{'>'} Loading workspace...</p>
         </div>
       </div>
     );
@@ -69,90 +67,115 @@ export default function DashboardPage() {
 
   const completedTasks = tasks.filter((t) => t.completed).length;
   const totalTasks = tasks.length;
+  const pendingTasks = totalTasks - completedTasks;
   const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
-      {/* Header */}
-      <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md shadow-lg border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 animate-slideInLeft">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg animate-pulse-subtle">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                  />
-                </svg>
-              </div>
+    <div className="min-h-screen bg-terminal-bg relative overflow-hidden">
+      {/* Particle Effects */}
+      <ParticleEffect />
+
+      {/* Matrix-style background effect */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-neon-green to-transparent animate-matrix-rain" style={{ animationDelay: '0s' }}></div>
+        <div className="absolute top-0 left-1/2 w-px h-full bg-gradient-to-b from-transparent via-neon-cyan to-transparent animate-matrix-rain" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-0 left-3/4 w-px h-full bg-gradient-to-b from-transparent via-neon-green to-transparent animate-matrix-rain" style={{ animationDelay: '4s' }}></div>
+      </div>
+
+      {/* Scan line effect */}
+      <div className="absolute inset-0 pointer-events-none opacity-5">
+        <div className="absolute w-full h-1 bg-neon-cyan shadow-[0_0_10px_rgba(0,255,255,0.8)] animate-scan-line"></div>
+      </div>
+
+      {/* Navigation */}
+      <Navigation />
+
+      {/* Main Content */}
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 relative z-10">
+        {/* Welcome Section */}
+        <div className="mb-8 animate-fadeIn">
+          <h1 className="text-3xl font-bold text-neon-cyan mb-2 font-terminal">
+            {'>'} WELCOME, <GlitchText intensity="medium">{(session.user.name || "USER").toUpperCase()}</GlitchText> <span className="animate-pulse">_</span>
+          </h1>
+          <p className="text-neon-green/70 font-mono text-sm">
+            <span className="animate-neon-flicker">[SYSTEM STATUS]</span> Task overview loaded successfully
+          </p>
+        </div>
+
+        {/* Stats Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-slideInLeft">
+          {/* Total Tasks Card */}
+          <div className="bg-terminal-bgLight/80 backdrop-blur-sm rounded border border-neon-cyan/40 shadow-[0_0_20px_rgba(0,255,255,0.2)] p-6 text-neon-cyan transform hover:scale-105 hover:shadow-[0_0_30px_rgba(0,255,255,0.4)] transition-all duration-300">
+            <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                  TaskFlow
-                </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Welcome back, <span className="font-semibold">{session.user.name || session.user.email}</span>!
-                </p>
+                <p className="text-neon-cyan/70 text-xs font-mono mb-2 uppercase tracking-wider">[TOTAL_TASKS]</p>
+                <p className="text-5xl font-bold font-mono">{totalTasks.toString().padStart(2, '0')}</p>
+              </div>
+              <div className="bg-neon-cyan/10 border border-neon-cyan/50 rounded p-4">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <ThemeToggle />
-              <button
-                onClick={handleLogout}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md"
-              >
-                <svg
-                  className="w-5 h-5 inline-block mr-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
+          </div>
+
+          {/* Completed Tasks Card */}
+          <div className="bg-terminal-bgLight/80 backdrop-blur-sm rounded border border-neon-green/40 shadow-[0_0_20px_rgba(0,255,65,0.2)] p-6 text-neon-green transform hover:scale-105 hover:shadow-[0_0_30px_rgba(0,255,65,0.4)] transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-neon-green/70 text-xs font-mono mb-2 uppercase tracking-wider">[COMPLETED]</p>
+                <p className="text-5xl font-bold font-mono">{completedTasks.toString().padStart(2, '0')}</p>
+              </div>
+              <div className="bg-neon-green/10 border border-neon-green/50 rounded p-4">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Logout
-              </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Pending Tasks Card */}
+          <div className="bg-terminal-bgLight/80 backdrop-blur-sm rounded border border-neon-purple/40 shadow-[0_0_20px_rgba(157,78,221,0.2)] p-6 text-neon-purple transform hover:scale-105 hover:shadow-[0_0_30px_rgba(157,78,221,0.4)] transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-neon-purple/70 text-xs font-mono mb-2 uppercase tracking-wider">[PENDING]</p>
+                <p className="text-5xl font-bold font-mono">{pendingTasks.toString().padStart(2, '0')}</p>
+              </div>
+              <div className="bg-neon-purple/10 border border-neon-purple/50 rounded p-4">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
             </div>
           </div>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Stats Card */}
-        <div className="mb-8 animate-fadeIn">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-700">
+        {/* Progress Card */}
+        <div className="mb-8 animate-fadeIn" style={{ animationDelay: "0.1s" }}>
+          <div className="bg-terminal-bgLight/80 backdrop-blur-sm rounded border border-neon-cyan/40 shadow-[0_0_20px_rgba(0,255,255,0.2)] p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Your Progress
+                <h3 className="text-xl font-bold text-neon-cyan flex items-center gap-2 font-mono">
+                  <span>📈</span>
+                  [PROGRESS_METRICS]
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {completedTasks} of {totalTasks} tasks completed
+                <p className="text-sm text-neon-green/70 mt-1 font-mono">
+                  {'>'} {completedTasks}/{totalTasks} tasks executed
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                <p className="text-4xl font-bold text-neon-cyan font-mono">
                   {Math.round(progressPercentage)}%
                 </p>
               </div>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+            <div className="relative w-full bg-terminal-border rounded h-4 overflow-hidden border border-neon-cyan/30">
               <div
-                className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500 ease-out"
+                className="absolute top-0 left-0 h-full bg-gradient-to-r from-neon-cyan via-neon-green to-neon-purple rounded transition-all duration-700 ease-out shadow-[0_0_15px_rgba(0,255,255,0.5)]"
                 style={{ width: `${progressPercentage}%` }}
-              ></div>
+              >
+                <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -161,21 +184,17 @@ export default function DashboardPage() {
         <div className="mb-6 animate-slideInRight">
           <button
             onClick={() => setShowForm(!showForm)}
-            className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 active:scale-95"
+            className="group flex items-center gap-2 rounded border border-neon-green bg-neon-green/20 px-6 py-3 text-sm font-semibold text-neon-green shadow-[0_0_15px_rgba(0,255,65,0.3)] hover:bg-neon-green/30 hover:shadow-[0_0_25px_rgba(0,255,65,0.5)] transition-all duration-200 transform hover:scale-105 active:scale-95 font-mono"
           >
             {showForm ? (
               <>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Cancel
+                <span className="text-lg">✗</span>
+                {'>'} CANCEL
               </>
             ) : (
               <>
-                <svg className="w-5 h-5 transform group-hover:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Add New Task
+                <span className="text-lg transform group-hover:rotate-90 transition-transform">➕</span>
+                {'>'} NEW_TASK
               </>
             )}
           </button>
@@ -198,12 +217,10 @@ export default function DashboardPage() {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 rounded-xl bg-red-50 dark:bg-red-900/20 p-4 animate-slideInLeft border border-red-200 dark:border-red-800">
-            <div className="flex">
-              <svg className="h-5 w-5 text-red-400 dark:text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-              <p className="ml-3 text-sm text-red-800 dark:text-red-200">{error}</p>
+          <div className="mb-6 rounded bg-neon-pink/10 p-4 animate-slideInLeft border border-neon-pink/50 shadow-[0_0_15px_rgba(255,0,110,0.3)]">
+            <div className="flex items-center gap-3">
+              <span className="text-neon-pink text-lg">✗</span>
+              <p className="text-sm text-neon-pink font-mono">[ERROR] {error}</p>
             </div>
           </div>
         )}

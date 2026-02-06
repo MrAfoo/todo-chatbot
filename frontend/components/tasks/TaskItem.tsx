@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Task, TaskUpdate } from "@/lib/types";
+import { Task, TaskUpdate, TaskPriority, TaskCategory } from "@/lib/types";
+import { getSoundSystem } from "@/lib/sounds";
 
 interface TaskItemProps {
   task: Task;
@@ -9,10 +10,37 @@ interface TaskItemProps {
   onDelete: (taskId: number) => Promise<boolean>;
 }
 
+const priorityColors = {
+  [TaskPriority.LOW]: "text-neon-green border-neon-green bg-neon-green/10",
+  [TaskPriority.MEDIUM]: "text-neon-yellow border-neon-yellow bg-neon-yellow/10",
+  [TaskPriority.HIGH]: "text-orange-400 border-orange-400 bg-orange-400/10",
+  [TaskPriority.URGENT]: "text-neon-pink border-neon-pink bg-neon-pink/10",
+};
+
+const priorityIcons = {
+  [TaskPriority.LOW]: "🟢",
+  [TaskPriority.MEDIUM]: "🟡",
+  [TaskPriority.HIGH]: "🟠",
+  [TaskPriority.URGENT]: "🔴",
+};
+
+const categoryIcons = {
+  [TaskCategory.PERSONAL]: "🏠",
+  [TaskCategory.WORK]: "💼",
+  [TaskCategory.SHOPPING]: "🛒",
+  [TaskCategory.HEALTH]: "❤️",
+  [TaskCategory.LEARNING]: "📚",
+  [TaskCategory.PROJECT]: "🚀",
+  [TaskCategory.OTHER]: "📌",
+};
+
 export default function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || "");
+  const [priority, setPriority] = useState(task.priority);
+  const [category, setCategory] = useState(task.category);
+  const [dueDate, setDueDate] = useState(task.due_date || "");
   const [loading, setLoading] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
@@ -25,18 +53,42 @@ export default function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
     await new Promise(resolve => setTimeout(resolve, 300));
     await onUpdate(task.id, { completed: !task.completed });
     
+    if (!task.completed && typeof window !== "undefined") {
+      const soundSystem = getSoundSystem();
+      soundSystem.taskCompleted();
+    }
+    
     setLoading(false);
     setIsCompleting(false);
   };
 
   const handleUpdate = async () => {
     setLoading(true);
+    
+    if (typeof window !== "undefined") {
+      const soundSystem = getSoundSystem();
+      soundSystem.buttonClick();
+    }
+    
     const result = await onUpdate(task.id, {
       title,
       description: description || undefined,
+      priority,
+      category,
+      due_date: dueDate || undefined,
     });
+    
     if (result) {
       setIsEditing(false);
+      if (typeof window !== "undefined") {
+        const soundSystem = getSoundSystem();
+        soundSystem.notification();
+      }
+    } else {
+      if (typeof window !== "undefined") {
+        const soundSystem = getSoundSystem();
+        soundSystem.error();
+      }
     }
     setLoading(false);
   };
@@ -44,47 +96,116 @@ export default function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
   const handleDelete = async () => {
     if (confirm("Are you sure you want to delete this task?")) {
       setLoading(true);
-      await onDelete(task.id);
+      
+      if (typeof window !== "undefined") {
+        const soundSystem = getSoundSystem();
+        soundSystem.buttonClick();
+      }
+      
+      const success = await onDelete(task.id);
+      
+      if (typeof window !== "undefined") {
+        const soundSystem = getSoundSystem();
+        if (success) {
+          soundSystem.taskDeleted();
+        } else {
+          soundSystem.error();
+        }
+      }
     }
   };
 
   if (isEditing) {
     return (
-      <div className="rounded-xl bg-white dark:bg-gray-800 p-5 shadow-lg border-2 border-blue-500 dark:border-blue-400 animate-scaleIn">
+      <div className="rounded bg-terminal-bgLight/90 backdrop-blur-sm p-5 shadow-[0_0_20px_rgba(0,255,255,0.3)] border border-neon-cyan animate-scaleIn">
         <div className="space-y-4">
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="block w-full rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 px-4 py-3 transition-all duration-200"
-            placeholder="Task title"
-            maxLength={200}
-          />
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            className="block w-full rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 px-4 py-3 transition-all duration-200 resize-none"
-            placeholder="Task description"
-            maxLength={2000}
-          />
+          <div className="relative">
+            <span className="absolute left-3 top-3 text-neon-cyan/60 font-mono text-sm">{'>'}</span>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="block w-full pl-8 pr-4 py-3 rounded border border-neon-cyan/30 bg-terminal-bg text-neon-cyan font-mono shadow-sm focus:border-neon-cyan focus:shadow-[0_0_15px_rgba(0,255,255,0.4)] transition-all duration-200 placeholder-neon-cyan/30 focus:outline-none"
+              placeholder="task_title"
+              maxLength={200}
+            />
+          </div>
+          <div className="relative">
+            <span className="absolute left-3 top-3 text-neon-green/60 font-mono text-sm">{'>'}</span>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="block w-full pl-8 pr-4 py-3 rounded border border-neon-green/30 bg-terminal-bg text-neon-green font-mono shadow-sm focus:border-neon-green focus:shadow-[0_0_15px_rgba(0,255,65,0.4)] transition-all duration-200 resize-none placeholder-neon-green/30 focus:outline-none"
+              placeholder="task_description"
+              maxLength={2000}
+            />
+          </div>
+          
+          {/* Priority and Category */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="relative">
+              <span className="absolute left-3 top-3 text-neon-purple/60 font-mono text-sm">{'>'}</span>
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value as TaskPriority)}
+                className="block w-full pl-8 pr-4 py-3 rounded border border-neon-purple/30 bg-terminal-bg text-neon-purple font-mono shadow-sm focus:border-neon-purple focus:shadow-[0_0_15px_rgba(157,78,221,0.4)] transition-all duration-200 focus:outline-none appearance-none cursor-pointer"
+              >
+                <option value={TaskPriority.LOW}>🟢 LOW</option>
+                <option value={TaskPriority.MEDIUM}>🟡 MEDIUM</option>
+                <option value={TaskPriority.HIGH}>🟠 HIGH</option>
+                <option value={TaskPriority.URGENT}>🔴 URGENT</option>
+              </select>
+            </div>
+            <div className="relative">
+              <span className="absolute left-3 top-3 text-neon-blue/60 font-mono text-sm">{'>'}</span>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as TaskCategory)}
+                className="block w-full pl-8 pr-4 py-3 rounded border border-neon-blue/30 bg-terminal-bg text-neon-blue font-mono shadow-sm focus:border-neon-blue focus:shadow-[0_0_15px_rgba(0,150,255,0.4)] transition-all duration-200 focus:outline-none appearance-none cursor-pointer"
+              >
+                <option value={TaskCategory.PERSONAL}>🏠 PERSONAL</option>
+                <option value={TaskCategory.WORK}>💼 WORK</option>
+                <option value={TaskCategory.SHOPPING}>🛒 SHOPPING</option>
+                <option value={TaskCategory.HEALTH}>❤️ HEALTH</option>
+                <option value={TaskCategory.LEARNING}>📚 LEARNING</option>
+                <option value={TaskCategory.PROJECT}>🚀 PROJECT</option>
+                <option value={TaskCategory.OTHER}>📌 OTHER</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Due Date */}
+          <div className="relative">
+            <span className="absolute left-3 top-3 text-neon-pink/60 font-mono text-sm">{'>'}</span>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="block w-full pl-8 pr-4 py-3 rounded border border-neon-pink/30 bg-terminal-bg text-neon-pink font-mono shadow-sm focus:border-neon-pink focus:shadow-[0_0_15px_rgba(255,0,110,0.4)] transition-all duration-200 focus:outline-none"
+            />
+          </div>
+
           <div className="flex gap-3">
             <button
               onClick={handleUpdate}
               disabled={loading || !title.trim()}
-              className="flex-1 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 shadow-md transition-all duration-200 transform hover:scale-105 active:scale-95"
+              className="flex-1 rounded bg-neon-cyan/20 border border-neon-cyan px-4 py-2.5 text-sm font-semibold text-neon-cyan hover:bg-neon-cyan/30 hover:shadow-[0_0_20px_rgba(0,255,255,0.5)] disabled:bg-terminal-border/20 disabled:border-terminal-border disabled:text-neon-green/30 shadow-md transition-all duration-200 transform hover:scale-105 active:scale-95 font-mono"
             >
-              Save Changes
+              {'>'} SAVE
             </button>
             <button
               onClick={() => {
                 setTitle(task.title);
                 setDescription(task.description || "");
+                setPriority(task.priority);
+                setCategory(task.category);
+                setDueDate(task.due_date || "");
                 setIsEditing(false);
               }}
-              className="rounded-lg bg-gray-200 dark:bg-gray-700 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 shadow-md transition-all duration-200 transform hover:scale-105 active:scale-95"
+              className="rounded bg-neon-pink/10 border border-neon-pink/50 px-4 py-2.5 text-sm font-semibold text-neon-pink hover:bg-neon-pink/20 hover:shadow-[0_0_15px_rgba(255,0,110,0.3)] shadow-md transition-all duration-200 transform hover:scale-105 active:scale-95 font-mono"
             >
-              Cancel
+              {'>'} ABORT
             </button>
           </div>
         </div>
@@ -94,22 +215,26 @@ export default function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
 
   return (
     <div
-      className={`group relative rounded-2xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-800 dark:to-gray-800/50 p-6 shadow-lg border-2 ${
+      className={`group relative rounded bg-terminal-bgLight/80 backdrop-blur-sm p-6 shadow-lg border ${
         task.completed 
-          ? "border-green-200 dark:border-green-800 opacity-75" 
-          : "border-transparent hover:border-blue-200 dark:hover:border-blue-800"
-      } transition-all duration-300 hover:shadow-2xl transform hover:scale-[1.01] ${
+          ? "border-neon-green/30 opacity-60" 
+          : "border-neon-cyan/30 hover:border-neon-cyan hover:shadow-[0_0_20px_rgba(0,255,255,0.3)]"
+      } transition-all duration-300 transform hover:scale-[1.01] ${
         isCompleting ? "animate-pulse" : ""
       }`}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
       {/* Priority/Status Indicator */}
-      <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-blue-500 to-purple-600 rounded-l-2xl"></div>
+      <div className={`absolute top-0 left-0 w-1 h-full ${
+        task.completed 
+          ? "bg-gradient-to-b from-neon-green to-neon-cyan" 
+          : "bg-gradient-to-b from-neon-cyan to-neon-purple"
+      } rounded-l shadow-[0_0_10px_rgba(0,255,255,0.5)]`}></div>
       
       {/* Completion Celebration Effect */}
       {isCompleting && !task.completed && (
-        <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-emerald-400/20 rounded-2xl animate-pulse"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-neon-green/20 to-neon-cyan/20 rounded animate-pulse"></div>
       )}
 
       <div className="flex items-start gap-4">
@@ -123,15 +248,15 @@ export default function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
               disabled={loading}
               className="sr-only peer"
             />
-            <div className={`w-7 h-7 rounded-xl border-3 flex items-center justify-center transition-all duration-300 ${
+            <div className={`w-7 h-7 rounded border-2 flex items-center justify-center transition-all duration-300 ${
               task.completed
-                ? "bg-gradient-to-br from-green-500 to-emerald-600 border-green-500"
-                : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400"
-            } shadow-md peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800`}>
-              {task.completed && (
-                <svg className="w-5 h-5 text-white animate-scaleIn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </svg>
+                ? "bg-neon-green/20 border-neon-green shadow-[0_0_10px_rgba(0,255,65,0.5)]"
+                : "bg-terminal-bg border-neon-cyan/50 hover:border-neon-cyan hover:shadow-[0_0_10px_rgba(0,255,255,0.3)]"
+            } shadow-md`}>
+              {task.completed ? (
+                <span className="text-neon-green text-lg font-bold animate-scaleIn">✓</span>
+              ) : (
+                <span className="text-neon-cyan/40 text-xs">○</span>
               )}
             </div>
           </label>
@@ -141,29 +266,56 @@ export default function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-3">
             <h3
-              className={`text-lg font-bold transition-all duration-300 ${
+              className={`text-lg font-bold transition-all duration-300 font-mono ${
                 task.completed
-                  ? "line-through text-gray-400 dark:text-gray-500"
-                  : "text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                  ? "line-through text-neon-green/40"
+                  : "text-neon-cyan group-hover:text-neon-green"
               }`}
             >
-              {task.title}
+              <span className="text-neon-cyan/60">{'>'} </span>{task.title}
             </h3>
             
-            {/* Quick Status Badge */}
+            {/* Priority Badge */}
+            <span className={`flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium ${priorityColors[task.priority]} border font-mono shadow-md`}>
+              {priorityIcons[task.priority]} {task.priority.toUpperCase()}
+            </span>
+          </div>
+
+          {/* Category and Status Row */}
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-neon-blue/10 border border-neon-blue/50 text-neon-blue font-mono">
+              {categoryIcons[task.category]} {task.category.toUpperCase()}
+            </span>
+            
             {!task.completed && (
-              <span className="flex-shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
-                Active
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-neon-cyan/10 border border-neon-cyan/50 text-neon-cyan font-mono shadow-[0_0_5px_rgba(0,255,255,0.3)]">
+                [ACTIVE]
+              </span>
+            )}
+            {task.completed && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-neon-green/10 border border-neon-green/50 text-neon-green font-mono shadow-[0_0_5px_rgba(0,255,65,0.3)]">
+                [DONE]
+              </span>
+            )}
+
+            {/* Due Date Badge */}
+            {task.due_date && (
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border font-mono ${
+                new Date(task.due_date) < new Date() && !task.completed
+                  ? "bg-neon-pink/20 border-neon-pink text-neon-pink animate-pulse"
+                  : "bg-neon-purple/10 border-neon-purple/50 text-neon-purple"
+              }`}>
+                ⏰ {new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </span>
             )}
           </div>
 
           {task.description && (
             <p
-              className={`mt-2 text-sm leading-relaxed transition-all duration-200 ${
+              className={`mt-2 text-sm leading-relaxed transition-all duration-200 font-mono ${
                 task.completed
-                  ? "text-gray-400 dark:text-gray-600"
-                  : "text-gray-600 dark:text-gray-400"
+                  ? "text-neon-green/40"
+                  : "text-neon-green/70"
               }`}
             >
               {task.description}
@@ -171,16 +323,9 @@ export default function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
           )}
 
           {/* Metadata */}
-          <div className="mt-4 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <span>{new Date(task.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+          <div className="mt-4 flex items-center gap-2 text-xs text-neon-cyan/50 font-mono">
+            <span>📅</span>
+            <span>[{new Date(task.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}]</span>
           </div>
         </div>
 
@@ -192,38 +337,24 @@ export default function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
             onClick={() => setIsEditing(true)}
             disabled={loading}
             title="Edit task"
-            className="group/btn rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 p-3 text-white disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed shadow-lg transition-all duration-200 transform hover:scale-110 active:scale-95"
+            className="group/btn rounded bg-neon-cyan/20 border border-neon-cyan/50 hover:bg-neon-cyan/30 hover:shadow-[0_0_15px_rgba(0,255,255,0.5)] p-3 text-neon-cyan disabled:bg-terminal-border/20 disabled:border-terminal-border disabled:text-neon-green/30 disabled:cursor-not-allowed shadow-lg transition-all duration-200 transform hover:scale-110 active:scale-95"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-              />
-            </svg>
+            <span className="text-sm font-bold">✎</span>
           </button>
           
           <button
             onClick={handleDelete}
             disabled={loading}
             title="Delete task"
-            className="rounded-xl bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 p-3 text-white disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed shadow-lg transition-all duration-200 transform hover:scale-110 active:scale-95"
+            className="rounded bg-neon-pink/20 border border-neon-pink/50 hover:bg-neon-pink/30 hover:shadow-[0_0_15px_rgba(255,0,110,0.5)] p-3 text-neon-pink disabled:bg-terminal-border/20 disabled:border-terminal-border disabled:text-neon-green/30 disabled:cursor-not-allowed shadow-lg transition-all duration-200 transform hover:scale-110 active:scale-95"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-              />
-            </svg>
+            <span className="text-sm font-bold">🗑</span>
           </button>
         </div>
       </div>
 
       {/* Hover Effect Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-purple-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:via-purple-500/5 group-hover:to-blue-500/5 rounded-2xl transition-all duration-500 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-neon-cyan/0 via-neon-green/0 to-neon-cyan/0 group-hover:from-neon-cyan/5 group-hover:via-neon-green/5 group-hover:to-neon-cyan/5 rounded transition-all duration-500 pointer-events-none"></div>
     </div>
   );
 }

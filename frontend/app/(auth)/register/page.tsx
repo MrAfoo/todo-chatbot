@@ -1,14 +1,9 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { betterAuthWrapper } from "@/lib/auth-wrapper";
-import dynamic from "next/dynamic";
-
-const ThemeToggle = dynamic(() => import("@/components/ThemeToggle"), {
-  ssr: false,
-});
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -18,9 +13,12 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setError("");
 
     // Validate passwords match
@@ -44,233 +42,282 @@ export default function RegisterPage() {
         name,
       });
 
-      if (result.error) {
-        setError(result.error.message || "Registration failed. Please try again.");
-      } else {
-        console.log("Better Auth registration successful!");
+      // Check for errors in the result
+      if (result?.error) {
+        const errorMsg = result.error.message || "Failed to create account";
+        setError(errorMsg);
+        setLoading(false);
+        return;
+      }
+
+      // Check if registration was successful
+      if (result?.data) {
+        // Successful registration - redirect to dashboard
         router.push("/dashboard");
+      } else {
+        // No error but also no data - something went wrong
+        setError("Registration failed. Please try again.");
+        setLoading(false);
       }
     } catch (err: any) {
+      // Catch any unexpected errors
       console.error("Registration error:", err);
-      setError(err.message || "Registration failed. Please try again.");
-    } finally {
+      const errorMsg = err?.message || err?.toString() || "Failed to create account. Please try again.";
+      setError(errorMsg);
       setLoading(false);
     }
   };
 
+  const getPasswordStrength = () => {
+    if (!password) return { strength: 0, label: "", color: "" };
+    
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (password.length >= 12) strength++;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+    if (/\d/.test(password)) strength++;
+    if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+    const labels = ["", "Weak", "Fair", "Good", "Strong", "Very Strong"];
+    const colors = ["", "red", "orange", "yellow", "green", "emerald"];
+    
+    return { strength, label: labels[strength], color: colors[strength] };
+  };
+
+  const passwordStrength = getPasswordStrength();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-12 sm:px-6 lg:px-8 transition-colors duration-300">
-      {/* Theme Toggle */}
-      <div className="fixed top-4 right-4 z-50 animate-fadeIn">
-        <ThemeToggle />
+    <div className="min-h-screen bg-terminal-bg relative flex items-center justify-center p-4 overflow-hidden">
+      {/* Matrix-style background effect */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-neon-green to-transparent animate-matrix-rain" style={{ animationDelay: '0s' }}></div>
+        <div className="absolute top-0 left-1/2 w-px h-full bg-gradient-to-b from-transparent via-neon-cyan to-transparent animate-matrix-rain" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-0 left-3/4 w-px h-full bg-gradient-to-b from-transparent via-neon-green to-transparent animate-matrix-rain" style={{ animationDelay: '4s' }}></div>
+      </div>
+      
+      {/* Glowing orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-purple/10 rounded-full blur-3xl animate-pulse-glow"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-green/10 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: "1s" }}></div>
       </div>
 
-      {/* Register Card */}
-      <div className="w-full max-w-md animate-scaleIn">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 space-y-8 backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90 border border-gray-200 dark:border-gray-700">
-          {/* Logo/Header */}
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 mb-4 animate-pulse-subtle">
-              <svg
-                className="w-8 h-8 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                />
-              </svg>
-            </div>
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Create Your Account
-            </h2>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Join{" "}
-              <span className="font-semibold text-purple-600 dark:text-purple-400">
-                TaskFlow
-              </span>{" "}
-              and start managing your tasks
-            </p>
+      <div className="relative w-full max-w-md animate-fadeIn z-10">
+        {/* Logo and Title */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded border-2 border-neon-purple bg-terminal-bgLight shadow-[0_0_30px_rgba(157,78,221,0.5)] mb-4 animate-pulse-glow">
+            <span className="text-4xl text-neon-purple">🚀</span>
           </div>
+          <h1 className="text-4xl font-bold font-terminal text-neon-green mb-2 flex items-center justify-center gap-2">
+            <span>{'>'}</span> INIT_NEW_USER
+          </h1>
+          <p className="text-neon-cyan/70 font-mono text-sm">
+            [SYSTEM REGISTRATION]
+          </p>
+        </div>
 
-          {/* Register Form */}
-          <form className="space-y-6" onSubmit={handleSubmit}>
+        {/* Register Card */}
+        <div className="bg-terminal-bgLight/90 backdrop-blur-xl rounded border border-neon-green/40 shadow-[0_0_30px_rgba(0,255,65,0.2)] p-8">
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+            {/* Error Message */}
             {error && (
-              <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 animate-slideInLeft border border-red-200 dark:border-red-800">
-                <div className="flex">
-                  <svg
-                    className="h-5 w-5 text-red-400 dark:text-red-500"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <p className="ml-3 text-sm text-red-800 dark:text-red-200">{error}</p>
+              <div className="rounded bg-neon-pink/10 p-4 border border-neon-pink/50 animate-slideInLeft shadow-[0_0_15px_rgba(255,0,110,0.3)]">
+                <div className="flex items-center gap-3">
+                  <span className="text-neon-pink text-xl animate-pulse">⚠</span>
+                  <div className="flex-1">
+                    <p className="text-sm text-neon-pink font-mono font-semibold">[REGISTRATION FAILED]</p>
+                    <p className="text-xs text-neon-pink/80 font-mono mt-1">{error}</p>
+                  </div>
                 </div>
               </div>
             )}
 
-            <div className="space-y-4">
-              <div className="animate-slideInLeft" style={{ animationDelay: "0.1s" }}>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Full Name
-                </label>
+            {/* Name Field */}
+            <div className="space-y-2">
+              <label htmlFor="name" className="block text-sm font-semibold text-neon-purple/80 font-mono">
+                [USER_NAME]
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <span className="text-neon-purple/60">{'>'}</span>
+                </div>
                 <input
                   id="name"
-                  name="name"
                   type="text"
-                  required
-                  minLength={3}
-                  maxLength={50}
-                  className="block w-full rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-purple-500 dark:focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                  placeholder="John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  required
+                  className="w-full pl-10 pr-4 py-3 bg-terminal-bg border border-neon-purple/30 rounded focus:border-neon-purple focus:shadow-[0_0_15px_rgba(157,78,221,0.3)] transition-all text-neon-purple font-mono placeholder-neon-purple/30 focus:outline-none"
+                  placeholder="user_name"
                 />
               </div>
+            </div>
 
-              <div className="animate-slideInLeft" style={{ animationDelay: "0.2s" }}>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Email address
-                </label>
+            {/* Email Field */}
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-semibold text-neon-cyan/80 font-mono">
+                [EMAIL_ADDRESS]
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <span className="text-neon-cyan/60">{'>'}</span>
+                </div>
                 <input
                   id="email"
-                  name="email"
                   type="email"
-                  required
-                  className="block w-full rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-purple-500 dark:focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                  placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full pl-10 pr-4 py-3 bg-terminal-bg border border-neon-cyan/30 rounded focus:border-neon-cyan focus:shadow-[0_0_15px_rgba(0,255,255,0.3)] transition-all text-neon-cyan font-mono placeholder-neon-cyan/30 focus:outline-none"
+                  placeholder="user@terminal.sys"
                 />
               </div>
+            </div>
 
-              <div className="animate-slideInLeft" style={{ animationDelay: "0.3s" }}>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Password
-                </label>
+            {/* Password Field */}
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-semibold text-neon-green/80 font-mono">
+                [PASSWORD]
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <span className="text-neon-green/60">{'>'}</span>
+                </div>
                 <input
                   id="password"
-                  name="password"
-                  type="password"
-                  required
-                  minLength={8}
-                  className="block w-full rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-purple-500 dark:focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                  placeholder="••••••••"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Minimum 8 characters
-                </p>
-              </div>
-
-              <div className="animate-slideInLeft" style={{ animationDelay: "0.4s" }}>
-                <label
-                  htmlFor="confirm-password"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Confirm Password
-                </label>
-                <input
-                  id="confirm-password"
-                  name="confirm-password"
-                  type="password"
                   required
-                  className="block w-full rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-purple-500 dark:focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                  minLength={8}
+                  className="w-full pl-10 pr-12 py-3 bg-terminal-bg border border-neon-green/30 rounded focus:border-neon-green focus:shadow-[0_0_15px_rgba(0,255,65,0.3)] transition-all text-neon-green font-mono placeholder-neon-green/30 focus:outline-none"
                   placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-neon-green/60 hover:text-neon-green transition-colors"
+                >
+                  {showPassword ? (
+                    <span className="text-sm">👁️</span>
+                  ) : (
+                    <span className="text-sm">🔒</span>
+                  )}
+                </button>
+              </div>
+              
+              {/* Password Strength Indicator */}
+              {password && (
+                <div className="mt-2 animate-fadeIn">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-neon-cyan/70 font-mono">[STRENGTH]</span>
+                    <span className={`text-xs font-semibold font-mono ${
+                      passwordStrength.strength >= 4 ? 'text-neon-green' :
+                      passwordStrength.strength >= 3 ? 'text-neon-cyan' :
+                      passwordStrength.strength >= 2 ? 'text-neon-yellow' :
+                      'text-neon-pink'
+                    }`}>
+                      {passwordStrength.label.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-terminal-border rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-300 ${
+                        passwordStrength.strength >= 4 ? 'bg-neon-green shadow-[0_0_10px_rgba(0,255,65,0.5)]' :
+                        passwordStrength.strength >= 3 ? 'bg-neon-cyan shadow-[0_0_10px_rgba(0,255,255,0.5)]' :
+                        passwordStrength.strength >= 2 ? 'bg-neon-yellow shadow-[0_0_10px_rgba(255,255,0,0.5)]' :
+                        'bg-neon-pink shadow-[0_0_10px_rgba(255,0,110,0.5)]'
+                      }`}
+                      style={{ width: `${(passwordStrength.strength / 5) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Confirm Password Field */}
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-neon-green/80 font-mono">
+                [CONFIRM_PASSWORD]
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <span className="text-neon-green/60">{'>'}</span>
+                </div>
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="w-full pl-10 pr-12 py-3 bg-terminal-bg border border-neon-green/30 rounded focus:border-neon-green focus:shadow-[0_0_15px_rgba(0,255,65,0.3)] transition-all text-neon-green font-mono placeholder-neon-green/30 focus:outline-none"
+                  placeholder="••••••••"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-neon-green/60 hover:text-neon-green transition-colors"
+                >
+                  {showConfirmPassword ? (
+                    <span className="text-sm">👁️</span>
+                  ) : (
+                    <span className="text-sm">🔒</span>
+                  )}
+                </button>
               </div>
+              {confirmPassword && password !== confirmPassword && (
+                <p className="text-xs text-neon-pink mt-1 animate-fadeIn font-mono">
+                  [ERROR] Passwords do not match
+                </p>
+              )}
             </div>
 
-            <div className="animate-slideInLeft" style={{ animationDelay: "0.5s" }}>
-              <button
-                type="submit"
-                disabled={loading}
-                className="group relative flex w-full justify-center items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 active:scale-95"
-              >
-                {loading ? (
-                  <>
-                    <svg
-                      className="animate-spin h-5 w-5"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    <span>Creating account...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Create account</span>
-                    <svg
-                      className="w-5 h-5 transform group-hover:translate-x-1 transition-transform"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
-                      />
-                    </svg>
-                  </>
-                )}
-              </button>
-            </div>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading || password !== confirmPassword}
+              className="w-full py-3 px-4 bg-neon-purple/20 border border-neon-purple hover:bg-neon-purple/30 hover:shadow-[0_0_25px_rgba(157,78,221,0.5)] text-neon-purple font-semibold font-mono rounded disabled:bg-terminal-border/20 disabled:border-terminal-border disabled:text-neon-green/30 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>INITIALIZING...</span>
+                </>
+              ) : (
+                <>
+                  <span>{'>'} CREATE USER</span>
+                  <span className="text-lg">🚀</span>
+                </>
+              )}
+            </button>
           </form>
 
-          {/* Footer */}
-          <div className="text-center animate-fadeIn" style={{ animationDelay: "0.6s" }}>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Already have an account?{" "}
+          {/* Divider */}
+          <div className="my-6 flex items-center">
+            <div className="flex-1 border-t border-neon-green/20"></div>
+            <span className="px-4 text-sm text-neon-green/50 font-mono">[OR]</span>
+            <div className="flex-1 border-t border-neon-green/20"></div>
+          </div>
+
+          {/* Sign In Link */}
+          <div className="text-center">
+            <p className="text-sm text-neon-cyan/70 font-mono">
+              Existing user?{" "}
               <Link
                 href="/login"
-                className="font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 transition-colors duration-200"
+                className="font-semibold text-neon-green hover:text-neon-cyan transition-colors hover:underline"
               >
-                Sign in instead
+                {'>'} Access terminal
               </Link>
             </p>
           </div>
         </div>
 
-        {/* Bottom decoration */}
-        <p className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400 animate-fadeIn" style={{ animationDelay: "0.7s" }}>
-          Secured with Better Auth • Protected by JWT
+        {/* Footer */}
+        <p className="text-center text-xs text-neon-green/40 mt-8 font-mono">
+          [TASKMASTER_v2.0.26] © 2026
         </p>
       </div>
     </div>

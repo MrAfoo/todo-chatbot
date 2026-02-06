@@ -10,11 +10,31 @@ export interface User {
   updated_at: string;
 }
 
+export enum TaskPriority {
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+  URGENT = "urgent",
+}
+
+export enum TaskCategory {
+  PERSONAL = "personal",
+  WORK = "work",
+  SHOPPING = "shopping",
+  HEALTH = "health",
+  LEARNING = "learning",
+  PROJECT = "project",
+  OTHER = "other",
+}
+
 export interface Task {
   id: number;
   title: string;
   description: string | null;
   completed: boolean;
+  priority: TaskPriority;
+  category: TaskCategory;
+  due_date: string | null;
   user_id: number;
   created_at: string;
   updated_at: string;
@@ -23,12 +43,18 @@ export interface Task {
 export interface TaskCreate {
   title: string;
   description?: string;
+  priority?: TaskPriority;
+  category?: TaskCategory;
+  due_date?: string;
 }
 
 export interface TaskUpdate {
   title?: string;
   description?: string;
   completed?: boolean;
+  priority?: TaskPriority;
+  category?: TaskCategory;
+  due_date?: string;
 }
 
 export interface UserRegister {

@@ -1,6 +1,7 @@
 """Pytest configuration and fixtures."""
 
 import pytest
+from unittest.mock import Mock, patch
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -33,7 +34,15 @@ def db_session():
 
 
 @pytest.fixture
-def client(db_session):
+def mock_ai_agent():
+    """Create a mock AI agent for testing."""
+    mock_agent = Mock()
+    mock_agent.chat.return_value = "I've processed your request successfully!"
+    return mock_agent
+
+
+@pytest.fixture
+def client(db_session, mock_ai_agent):
     """Create a test client with database dependency override."""
     def override_get_db():
         try:
@@ -42,7 +51,11 @@ def client(db_session):
             pass
 
     app.dependency_overrides[get_db] = override_get_db
-    yield TestClient(app)
+    
+    # Mock the AI agent to avoid needing GROQ_API_KEY
+    with patch('app.routers.chat.get_ai_agent', return_value=mock_ai_agent):
+        yield TestClient(app)
+    
     app.dependency_overrides.clear()
 
 

@@ -1,7 +1,8 @@
 """Task-related Pydantic schemas."""
 
-from datetime import datetime
+from datetime import datetime, date
 from pydantic import BaseModel, Field
+from app.models.task import TaskPriority, TaskCategory
 
 
 class TaskCreate(BaseModel):
@@ -9,6 +10,9 @@ class TaskCreate(BaseModel):
 
     title: str = Field(..., min_length=1, max_length=200)
     description: str | None = Field(None, max_length=2000)
+    priority: TaskPriority = Field(default=TaskPriority.MEDIUM)
+    category: TaskCategory = Field(default=TaskCategory.OTHER)
+    due_date: date | None = None
 
 
 class TaskUpdate(BaseModel):
@@ -17,6 +21,9 @@ class TaskUpdate(BaseModel):
     title: str | None = Field(None, min_length=1, max_length=200)
     description: str | None = Field(None, max_length=2000)
     completed: bool | None = None
+    priority: TaskPriority | None = None
+    category: TaskCategory | None = None
+    due_date: date | None = None
 
 
 class TaskResponse(BaseModel):
@@ -26,6 +33,9 @@ class TaskResponse(BaseModel):
     title: str
     description: str | None
     completed: bool
+    priority: TaskPriority
+    category: TaskCategory
+    due_date: date | None
     user_id: int
     created_at: datetime
     updated_at: datetime

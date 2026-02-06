@@ -81,6 +81,9 @@ def create_task(
     db_task = Task(
         title=task_data.title,
         description=task_data.description,
+        priority=task_data.priority,
+        category=task_data.category,
+        due_date=task_data.due_date,
         user_id=user_id,
     )
     db.add(db_task)
@@ -164,6 +167,12 @@ def update_task(
         task.description = task_data.description
     if task_data.completed is not None:
         task.completed = task_data.completed
+    if task_data.priority is not None:
+        task.priority = task_data.priority
+    if task_data.category is not None:
+        task.category = task_data.category
+    if task_data.due_date is not None:
+        task.due_date = task_data.due_date
 
     db.commit()
     db.refresh(task)

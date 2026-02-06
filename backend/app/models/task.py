@@ -1,10 +1,30 @@
 """Task database model."""
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, Date, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import relationship
+import enum
 
 from app.database import Base
+
+
+class TaskPriority(str, enum.Enum):
+    """Task priority levels."""
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    URGENT = "urgent"
+
+
+class TaskCategory(str, enum.Enum):
+    """Task categories."""
+    PERSONAL = "personal"
+    WORK = "work"
+    SHOPPING = "shopping"
+    HEALTH = "health"
+    LEARNING = "learning"
+    PROJECT = "project"
+    OTHER = "other"
 
 
 class Task(Base):
@@ -16,6 +36,9 @@ class Task(Base):
     title = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
     completed = Column(Boolean, default=False, nullable=False)
+    priority = Column(SQLEnum(TaskPriority), default=TaskPriority.MEDIUM, nullable=False)
+    category = Column(SQLEnum(TaskCategory), default=TaskCategory.OTHER, nullable=False)
+    due_date = Column(Date, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(
@@ -27,4 +50,4 @@ class Task(Base):
 
     def __repr__(self) -> str:
         status = "✓" if self.completed else " "
-        return f"<Task(id={self.id}, title='{self.title}', completed=[{status}])>"
+        return f"<Task(id={self.id}, title='{self.title}', priority={self.priority.value}, completed=[{status}])>"

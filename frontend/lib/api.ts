@@ -107,6 +107,35 @@ class ApiClient {
   async deleteTask(userId: number, taskId: number): Promise<void> {
     await this.client.delete(`/api/${userId}/tasks/${taskId}`);
   }
+
+  // Chat endpoints
+  async sendChatMessage(message: string, conversationId?: number): Promise<{ message: string; conversation_id: number }> {
+    const response = await this.client.post("/api/chat", {
+      message,
+      conversation_id: conversationId,
+    });
+    return response.data;
+  }
+
+  async getConversations(): Promise<Array<{ id: number; created_at: string; updated_at: string; message_count: number }>> {
+    const response = await this.client.get("/api/chat");
+    return response.data;
+  }
+
+  async getConversation(conversationId: number): Promise<{
+    id: number;
+    user_id: number;
+    created_at: string;
+    updated_at: string;
+    messages: Array<{ id: number; role: string; content: string; created_at: string }>;
+  }> {
+    const response = await this.client.get(`/api/chat/${conversationId}`);
+    return response.data;
+  }
+
+  async deleteConversation(conversationId: number): Promise<void> {
+    await this.client.delete(`/api/chat/${conversationId}`);
+  }
 }
 
 // Export singleton instance

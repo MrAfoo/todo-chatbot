@@ -1,15 +1,17 @@
-# Full-Stack Todo Application
+# Full-Stack AI-Powered Todo Application
 
-A modern full-stack web application with **Better Auth** (frontend) and **FastAPI** (backend) using shared JWT authentication.
+A modern full-stack web application with **Better Auth** authentication, **AI Chatbot** powered by **Groq** (free!), and **FastAPI** backend.
 
 ## 🎯 Overview
 
 This is a production-ready todo application featuring:
 
+- 🤖 **AI Chatbot**: Manage tasks conversationally using Groq's Llama 3.3 70B (FREE!)
 - 🔐 **Better Auth + JWT**: Secure authentication with token-based API access
 - ✅ **Task Management**: Full CRUD operations with user isolation
+- 🧠 **MCP Server**: Model Context Protocol for AI tool integration
 - 👤 **Multi-user Support**: Each user has their own tasks
-- 🎨 **Modern UI**: Responsive design with Tailwind CSS
+- 🎨 **Modern UI**: Responsive design with Tailwind CSS and dark mode
 - 🗄️ **PostgreSQL Database**: Persistent data storage
 - 🔒 **Stateless Auth**: Frontend and backend verify JWT tokens independently
 - 🧪 **Comprehensive Tests**: 15/15 backend tests passing
@@ -24,6 +26,7 @@ Create `.env` files with the **SAME SECRET KEY** in both:
 ```bash
 DATABASE_URL=postgresql://postgres:password@localhost:5432/todo_db
 BETTER_AUTH_SECRET=your-secret-key-min-32-chars-long-change-in-production
+GROQ_API_KEY=gsk_your_groq_api_key_here
 ```
 
 **frontend/.env.local**:
@@ -33,7 +36,9 @@ BETTER_AUTH_SECRET=your-secret-key-min-32-chars-long-change-in-production
 DATABASE_URL=postgresql://postgres:password@localhost:5432/todo_db
 ```
 
-⚠️ **CRITICAL**: The `BETTER_AUTH_SECRET` must be **identical** in both files!
+⚠️ **CRITICAL**: 
+- The `BETTER_AUTH_SECRET` must be **identical** in both files!
+- Get your **FREE** Groq API key at https://console.groq.com (takes 2 minutes!)
 
 ### 2. Set Up Database
 
@@ -68,12 +73,11 @@ npm run dev
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000
 - **API Docs**: http://localhost:8000/docs
+- **AI Chat**: http://localhost:3000/chat (after login)
 
 ## 📖 Documentation
 
-- **[QUICK-START.md](./QUICK-START.md)** - Get running in 5 minutes
-- **[JWT-INTEGRATION-GUIDE.md](./JWT-INTEGRATION-GUIDE.md)** - Complete JWT authentication guide
-- **[IMPLEMENTATION-SUMMARY.md](./IMPLEMENTATION-SUMMARY.md)** - Detailed change summary
+- **[GROQ_SETUP.md](./GROQ_SETUP.md)** - How to get your free Groq API key and setup
 - **[backend/README.md](./backend/README.md)** - Backend API documentation
 - **[frontend/README.md](./frontend/README.md)** - Frontend documentation
 
@@ -122,6 +126,8 @@ npm run dev
 
 ### Backend
 - **Framework**: FastAPI
+- **AI Provider**: Groq (Llama 3.3 70B) - FREE!
+- **MCP Server**: Model Context Protocol SDK
 - **Database**: PostgreSQL
 - **ORM**: SQLAlchemy 2.0
 - **Migrations**: Alembic
@@ -134,6 +140,7 @@ npm run dev
 - **Language**: TypeScript
 - **Authentication**: Better Auth with JWT plugin
 - **Styling**: Tailwind CSS
+- **Theme**: Dark/Light mode support
 - **HTTP Client**: Axios (auto-attaches JWT tokens)
 - **Testing**: Jest + React Testing Library
 
@@ -219,7 +226,34 @@ npm run build               # Production build
 - `PUT /api/{user_id}/tasks/{task_id}` - Update task
 - `DELETE /api/{user_id}/tasks/{task_id}` - Delete task
 
-All task endpoints require `Authorization: Bearer <token>` header and enforce user ownership.
+### AI Chat (JWT Required)
+- `POST /api/chat` - Send message to AI chatbot, get response
+- `GET /api/chat` - List user's conversations
+- `GET /api/chat/{conversation_id}` - Get conversation history
+
+All endpoints require `Authorization: Bearer <token>` header and enforce user ownership.
+
+## 🤖 AI Chatbot Features
+
+The AI chatbot can help you manage tasks conversationally:
+
+**Example Commands:**
+- "Create a task to buy groceries"
+- "Show me all my tasks"
+- "Mark task 5 as complete"
+- "Update task 3 description to 'Buy milk and eggs'"
+- "Delete the task about groceries"
+- "Show me only incomplete tasks"
+
+**MCP Tools Available:**
+- `create_task` - Create new tasks
+- `list_tasks` - View all or filtered tasks
+- `get_task` - Get specific task details
+- `update_task` - Modify task properties
+- `delete_task` - Remove tasks
+- `mark_task_complete` / `mark_task_incomplete` - Toggle completion status
+
+All AI operations are automatically scoped to the authenticated user!
 
 ## 🐛 Troubleshooting
 
@@ -227,6 +261,12 @@ All task endpoints require `Authorization: Bearer <token>` header and enforce us
 - ✅ Verify `BETTER_AUTH_SECRET` matches in both .env files
 - ✅ Check token is being sent in request headers (DevTools → Network)
 - ✅ Try logout and login again to get fresh token
+
+### AI Chatbot Not Working
+- ✅ Ensure `GROQ_API_KEY` is set in backend/.env
+- ✅ Get your free key at https://console.groq.com
+- ✅ Restart backend server after adding the key
+- ✅ Check backend logs for any API errors
 
 ### Database Connection Errors
 - ✅ Ensure PostgreSQL is running: `pg_isready`
@@ -249,28 +289,31 @@ All task endpoints require `Authorization: Bearer <token>` header and enforce us
 .
 ├── backend/                    # FastAPI backend
 │   ├── app/
-│   │   ├── models/            # SQLAlchemy models
+│   │   ├── models/            # SQLAlchemy models (User, Task, Conversation)
 │   │   ├── schemas/           # Pydantic schemas  
-│   │   ├── routers/           # API endpoints
-│   │   ├── services/          # JWT verification & auth
-│   │   ├── config.py          # Settings with BETTER_AUTH_SECRET
+│   │   ├── routers/           # API endpoints (auth, tasks, chat)
+│   │   ├── services/          # JWT verification, AI agent
+│   │   ├── mcp_server.py      # MCP server for AI tools
+│   │   ├── config.py          # Settings (GROQ_API_KEY, BETTER_AUTH_SECRET)
 │   │   └── main.py            # FastAPI app
 │   ├── tests/                 # 15 tests (all passing)
 │   └── alembic/               # Database migrations
 │
 ├── frontend/                   # Next.js frontend
-│   ├── app/                   # Pages (login, register, dashboard)
-│   ├── components/            # React components
+│   ├── app/                   
+│   │   ├── (auth)/            # Login & register pages
+│   │   ├── dashboard/         # Task management dashboard
+│   │   └── chat/              # AI chatbot interface
+│   ├── components/            # React components (Navigation, Tasks, Theme)
+│   ├── contexts/              # Theme context for dark mode
 │   ├── lib/
 │   │   ├── auth-server.ts    # Better Auth config (JWT plugin)
 │   │   ├── auth-client.ts    # Client-side auth helpers
 │   │   └── api.ts            # Axios client (auto-attaches JWT)
 │   └── hooks/                # Custom React hooks
 │
-├── JWT-INTEGRATION-GUIDE.md   # Comprehensive JWT guide
-├── QUICK-START.md             # 5-minute setup
-├── IMPLEMENTATION-SUMMARY.md  # Detailed change summary
-└── src/                       # Original CLI app (legacy)
+├── GROQ_SETUP.md              # Free AI setup guide
+└── README.md                  # This file
 ```
 
 ## 🚀 Deployment
@@ -292,6 +335,7 @@ All task endpoints require `Authorization: Bearer <token>` header and enforce us
 ```bash
 DATABASE_URL=postgresql://user:pass@host:5432/todo_db
 BETTER_AUTH_SECRET=<your-production-secret>
+GROQ_API_KEY=<your-groq-api-key>
 ALLOWED_ORIGINS=https://yourdomain.com
 DEBUG=False
 ```

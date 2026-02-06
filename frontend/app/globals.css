@@ -2,6 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Cyberpunk Theme Variables */
+:root,
+[data-theme="hacker"] {
+  --bg-primary: #0a0e27;
+  --bg-secondary: #0f1419;
+  --border-color: #1a1f3a;
+  --text-primary: #00ff41;
+  --text-secondary: #00ffff;
+  --accent-1: #00ff41;
+  --accent-2: #00ffff;
+  --accent-3: #ff006e;
+  --accent-4: #9d4edd;
+}
+
+[data-theme="neon-light"] {
+  --bg-primary: #f0f4ff;
+  --bg-secondary: #ffffff;
+  --border-color: #00ffff;
+  --text-primary: #0a0e27;
+  --text-secondary: #1a1f3a;
+  --accent-1: #ff006e;
+  --accent-2: #0096ff;
+  --accent-3: #9d4edd;
+  --accent-4: #00ffff;
+}
+
+[data-theme="matrix"] {
+  --bg-primary: #000000;
+  --bg-secondary: #001100;
+  --border-color: #003300;
+  --text-primary: #00ff41;
+  --text-secondary: #00cc33;
+  --accent-1: #00ff41;
+  --accent-2: #00cc33;
+  --accent-3: #009922;
+  --accent-4: #00ff88;
+}
+
+[data-theme="vaporwave"] {
+  --bg-primary: #1a0033;
+  --bg-secondary: #2d0066;
+  --border-color: #660099;
+  --text-primary: #ff00ff;
+  --text-secondary: #00ffff;
+  --accent-1: #ff00ff;
+  --accent-2: #ff66ff;
+  --accent-3: #00ffff;
+  --accent-4: #ffccff;
+}
+
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -11,10 +65,41 @@
   }
  
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --background: 210 100% 6%;
+    --foreground: 120 100% 60%;
+    --primary: 180 100% 50%;
+    --primary-foreground: 210 100% 6%;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-terminal-bg text-neon-green font-mono;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    background: linear-gradient(to bottom, #0a0e27 0%, #0f1419 100%);
+    min-height: 100vh;
+  }
+  
+  /* Make body have subtle scanline effect */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 255, 65, 0.03) 0px,
+      transparent 1px,
+      transparent 2px,
+      rgba(0, 255, 65, 0.03) 3px
+    );
+    z-index: 9999;
+    animation: scan-line 6s linear infinite;
   }
 }
 
@@ -72,6 +157,64 @@
   }
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Typing animation for text */
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* Scan line effect */
+@keyframes scan-line {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+/* Matrix rain effect */
+@keyframes matrix-rain {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+/* Glitch effect */
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-out;
 }
@@ -92,6 +235,16 @@
   animation: pulse-subtle 2s ease-in-out infinite;
 }
 
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(to right, #f0f0f0 4%, #e0e0e0 25%, #f0f0f0 36%);
+  background-size: 1000px 100%;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
 /* Smooth transitions */
 * {
   transition-property: background-color, border-color, color, fill, stroke;
@@ -99,21 +252,25 @@
   transition-duration: 150ms;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - Hacker themed */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gray-100 dark:bg-gray-800;
+  background: rgba(10, 14, 39, 0.5);
+  border-left: 1px solid rgba(0, 255, 65, 0.1);
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+  background: rgba(0, 255, 65, 0.3);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 255, 65, 0.5);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400 dark:bg-gray-500;
+  background: rgba(0, 255, 65, 0.5);
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
 }
 
 :root {

@@ -1,13 +1,17 @@
 import { betterAuth } from "better-auth";
+import { Pool } from "pg";
 
-// Simple configuration - let Better Auth handle the database connection
+// Create a custom PostgreSQL pool with proper SSL configuration for Neon
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL?.includes('neon.tech') 
+    ? { rejectUnauthorized: false }
+    : undefined,
+});
+
+// Better Auth configuration with custom database adapter
 export const auth = betterAuth({
-  database: {
-    connectionString: process.env.DATABASE_URL || "",
-    ssl: {
-      rejectUnauthorized: false,
-    },
-  },
+  database: pool as any,
   emailAndPassword: {
     enabled: true,
   },

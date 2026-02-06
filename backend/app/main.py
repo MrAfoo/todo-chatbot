@@ -4,12 +4,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import auth_router, tasks_router
+from app.routers import auth_router, tasks_router, chat_router
 
 # Create FastAPI application
 app = FastAPI(
-    title="Todo API",
-    description="Full-stack todo application backend with JWT authentication",
+    title="Task Master API",
+    description="Full-stack task management application backend with AI-powered assistance",
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -27,6 +27,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth_router)
 app.include_router(tasks_router)
+app.include_router(chat_router)
 
 
 @app.get("/")
@@ -34,7 +35,7 @@ app.include_router(tasks_router)
 def root() -> dict:
     """Root endpoint."""
     return {
-        "message": "Todo API",
+        "message": "Task Master API",
         "version": "0.1.0",
         "docs": "/docs",
     }
