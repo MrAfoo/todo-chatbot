@@ -10,21 +10,21 @@ from app.database import Base
 
 class TaskPriority(str, enum.Enum):
     """Task priority levels."""
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    URGENT = "urgent"
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    URGENT = "URGENT"
 
 
 class TaskCategory(str, enum.Enum):
     """Task categories."""
-    PERSONAL = "personal"
-    WORK = "work"
-    SHOPPING = "shopping"
-    HEALTH = "health"
-    LEARNING = "learning"
-    PROJECT = "project"
-    OTHER = "other"
+    PERSONAL = "PERSONAL"
+    WORK = "WORK"
+    SHOPPING = "SHOPPING"
+    HEALTH = "HEALTH"
+    LEARNING = "LEARNING"
+    PROJECT = "PROJECT"
+    OTHER = "OTHER"
 
 
 class Task(Base):

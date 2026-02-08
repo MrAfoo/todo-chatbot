@@ -11,20 +11,20 @@ export interface User {
 }
 
 export enum TaskPriority {
-  LOW = "low",
-  MEDIUM = "medium",
-  HIGH = "high",
-  URGENT = "urgent",
+  LOW = "LOW",
+  MEDIUM = "MEDIUM",
+  HIGH = "HIGH",
+  URGENT = "URGENT",
 }
 
 export enum TaskCategory {
-  PERSONAL = "personal",
-  WORK = "work",
-  SHOPPING = "shopping",
-  HEALTH = "health",
-  LEARNING = "learning",
-  PROJECT = "project",
-  OTHER = "other",
+  PERSONAL = "PERSONAL",
+  WORK = "WORK",
+  SHOPPING = "SHOPPING",
+  HEALTH = "HEALTH",
+  LEARNING = "LEARNING",
+  PROJECT = "PROJECT",
+  OTHER = "OTHER",
 }
 
 export interface Task {
