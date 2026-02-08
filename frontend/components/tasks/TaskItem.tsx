@@ -276,15 +276,15 @@ export default function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
             </h3>
             
             {/* Priority Badge */}
-            <span className={`flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium ${priorityColors[task.priority]} border font-mono shadow-md`}>
-              {priorityIcons[task.priority]} {task.priority.toUpperCase()}
+            <span className={`flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium ${priorityColors[task.priority || 'medium']} border font-mono shadow-md`}>
+              {priorityIcons[task.priority || 'medium']} {(task.priority || 'medium').toUpperCase()}
             </span>
           </div>
 
           {/* Category and Status Row */}
           <div className="flex items-center gap-2 mt-2 flex-wrap">
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-neon-blue/10 border border-neon-blue/50 text-neon-blue font-mono">
-              {categoryIcons[task.category]} {task.category.toUpperCase()}
+              {categoryIcons[task.category || 'general']} {(task.category || 'general').toUpperCase()}
             </span>
             
             {!task.completed && (
