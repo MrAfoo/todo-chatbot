@@ -34,8 +34,14 @@ export default function ChatPage() {
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputAreaRef = useRef<HTMLDivElement>(null);
+
+  // Fix hydration issues by only rendering after mount
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Voice recognition hook
   const {
@@ -230,7 +236,7 @@ export default function ChatPage() {
     }
   };
 
-  if (isPending) {
+  if (!isMounted || isPending) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-terminal-bg">
         <div className="text-center">

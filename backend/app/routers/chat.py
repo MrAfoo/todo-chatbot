@@ -94,6 +94,30 @@ def chat(
             user_id=current_user.id,
             db=db,
         )
+    except ValueError as e:
+        # Handle missing API key error specifically
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"Configuration error in AI agent: {e}")
+        print(f"Full traceback:\n{error_details}")
+        
+        # Check if it's a missing GROQ_API_KEY error
+        if "GROQ_API_KEY" in str(e):
+            assistant_response = (
+                "⚠️ AI Agent Configuration Error\n\n"
+                "The chatbot AI service is not properly configured. "
+                "The GROQ_API_KEY environment variable is missing.\n\n"
+                "If you're the administrator:\n"
+                "1. Get a free API key from https://console.groq.com\n"
+                "2. Add GROQ_API_KEY to your environment variables\n"
+                "3. Restart the application\n\n"
+                "Please contact support for assistance."
+            )
+        else:
+            assistant_response = (
+                f"⚠️ Configuration Error: {str(e)}\n\n"
+                "Please contact support if the issue persists."
+            )
     except Exception as e:
         # Log the error with more details for debugging
         import traceback
