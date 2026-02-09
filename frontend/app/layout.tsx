@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { CyberpunkThemeProvider } from "@/contexts/CyberpunkThemeContext";
+import { KeepAliveProvider } from "@/components/KeepAliveProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,11 +24,13 @@ export default function RootLayout({
         className={`${inter.className} bg-terminal-bg transition-colors duration-300`}
         suppressHydrationWarning
       >
-        <CyberpunkThemeProvider>
-          <ThemeProvider>
-            {children}
-          </ThemeProvider>
-        </CyberpunkThemeProvider>
+        <KeepAliveProvider>
+          <CyberpunkThemeProvider>
+            <ThemeProvider>
+              {children}
+            </ThemeProvider>
+          </CyberpunkThemeProvider>
+        </KeepAliveProvider>
       </body>
     </html>
   );
