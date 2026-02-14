@@ -175,14 +175,14 @@ export default function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
             </div>
           </div>
 
-          {/* Due Date */}
+          {/* Due Date & Time */}
           <div className="relative">
             <span className="absolute left-3 top-3 text-neon-pink/60 font-mono text-sm">{'>'}</span>
             <input
-              type="date"
+              type="datetime-local"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="block w-full pl-8 pr-4 py-3 rounded border border-neon-pink/30 bg-terminal-bg text-neon-pink font-mono shadow-sm focus:border-neon-pink focus:shadow-[0_0_15px_rgba(255,0,110,0.4)] transition-all duration-200 focus:outline-none"
+              className="block w-full pl-8 pr-4 py-3 rounded border border-neon-pink/30 bg-terminal-bg text-neon-pink font-mono shadow-sm focus:border-neon-pink focus:shadow-[0_0_15px_rgba(255,0,110,0.4)] transition-all duration-200 focus:outline-none [color-scheme:dark]"
             />
           </div>
 
@@ -309,7 +309,12 @@ export default function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
                   ? "bg-neon-pink/20 border-neon-pink text-neon-pink animate-pulse"
                   : "bg-neon-purple/10 border-neon-purple/50 text-neon-purple"
               }`}>
-                ⏰ {new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                ⏰ {new Date(task.due_date).toLocaleString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
               </span>
             )}
           </div>

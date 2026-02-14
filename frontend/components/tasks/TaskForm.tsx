@@ -177,22 +177,22 @@ export default function TaskForm({
         </div>
       </div>
 
-      {/* Due Date */}
+      {/* Due Date & Time */}
       <div className="animate-slideInLeft" style={{ animationDelay: "0.4s" }}>
         <label
           htmlFor="dueDate"
           className="block text-sm font-semibold text-neon-pink/80 mb-2 font-mono"
         >
-          [DUE_DATE] <span className="text-neon-pink/50 text-xs">(optional)</span>
+          [DUE_DATE_TIME] <span className="text-neon-pink/50 text-xs">(optional)</span>
         </label>
         <div className="relative">
           <span className="absolute left-3 top-3 text-neon-pink/60 font-mono">{'>'}</span>
           <input
-            type="date"
+            type="datetime-local"
             id="dueDate"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full pl-8 pr-4 py-3 border border-neon-pink/30 bg-terminal-bg text-neon-pink rounded focus:border-neon-pink focus:shadow-[0_0_15px_rgba(255,0,110,0.3)] transition-all duration-200 font-mono focus:outline-none"
+            className="w-full pl-8 pr-4 py-3 border border-neon-pink/30 bg-terminal-bg text-neon-pink rounded focus:border-neon-pink focus:shadow-[0_0_15px_rgba(255,0,110,0.3)] transition-all duration-200 font-mono focus:outline-none [color-scheme:dark]"
           />
         </div>
       </div>

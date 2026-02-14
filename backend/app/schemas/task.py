@@ -12,7 +12,7 @@ class TaskCreate(BaseModel):
     description: str | None = Field(None, max_length=2000)
     priority: TaskPriority = Field(default=TaskPriority.MEDIUM)
     category: TaskCategory = Field(default=TaskCategory.OTHER)
-    due_date: date | None = None
+    due_date: datetime | None = None
 
 
 class TaskUpdate(BaseModel):
@@ -23,7 +23,7 @@ class TaskUpdate(BaseModel):
     completed: bool | None = None
     priority: TaskPriority | None = None
     category: TaskCategory | None = None
-    due_date: date | None = None
+    due_date: datetime | None = None
 
 
 class TaskResponse(BaseModel):
@@ -35,7 +35,7 @@ class TaskResponse(BaseModel):
     completed: bool
     priority: TaskPriority
     category: TaskCategory
-    due_date: date | None
+    due_date: datetime | None
     user_id: int
     created_at: datetime
     updated_at: datetime

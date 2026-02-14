@@ -196,15 +196,56 @@ class TaskMCPServer:
         self, db: Session, arguments: dict[str, Any]
     ) -> list[TextContent]:
         """Create a new task."""
+        from datetime import date as date_type
+        from app.models.task import TaskPriority, TaskCategory
+        
         user_id = arguments["user_id"]
         title = arguments["title"]
         description = arguments.get("description", "")
+        priority = arguments.get("priority", "medium")
+        category = arguments.get("category", "other")
+        due_date_str = arguments.get("due_date")
+
+        # Convert priority and category strings to enums
+        try:
+            priority_enum = TaskPriority[priority.upper()]
+        except (KeyError, AttributeError):
+            priority_enum = TaskPriority.MEDIUM
+
+        try:
+            category_enum = TaskCategory[category.upper()]
+        except (KeyError, AttributeError):
+            category_enum = TaskCategory.OTHER
+
+        # Parse due_date if provided (supports both date and datetime formats)
+        due_date = None
+        if due_date_str:
+            try:
+                from datetime import datetime
+                # Try ISO datetime format with fromisoformat (handles "2026-02-21T15:30", "2026-02-21T15:30:00", etc.)
+                try:
+                    due_date = datetime.fromisoformat(due_date_str)
+                except ValueError:
+                    # Try space-separated format "2026-02-21 15:30"
+                    if ' ' in due_date_str:
+                        try:
+                            due_date = datetime.strptime(due_date_str, "%Y-%m-%d %H:%M:%S")
+                        except ValueError:
+                            due_date = datetime.strptime(due_date_str, "%Y-%m-%d %H:%M")
+                    else:
+                        # Just a date, set time to start of day
+                        due_date = datetime.strptime(due_date_str, "%Y-%m-%d")
+            except (ValueError, TypeError):
+                pass  # Invalid date format, leave as None
 
         task = Task(
             user_id=user_id,
             title=title,
             description=description,
             completed=False,
+            priority=priority_enum,
+            category=category_enum,
+            due_date=due_date,
         )
         db.add(task)
         db.commit()
@@ -213,7 +254,7 @@ class TaskMCPServer:
         return [
             TextContent(
                 type="text",
-                text=f"Task created successfully! ID: {task.id}, Title: {task.title}",
+                text=f"Task created successfully! ID: {task.id}, Title: {task.title}, Priority: {task.priority.value}, Category: {task.category.value}",
             )
         ]
 
@@ -268,6 +309,8 @@ class TaskMCPServer:
         self, db: Session, arguments: dict[str, Any]
     ) -> list[TextContent]:
         """Update a task."""
+        from app.models.task import TaskPriority, TaskCategory
+        
         user_id = arguments["user_id"]
         task_id = arguments["task_id"]
 
@@ -286,6 +329,46 @@ class TaskMCPServer:
             task.description = arguments["description"]
         if "completed" in arguments:
             task.completed = arguments["completed"]
+        
+        # Handle priority update
+        if "priority" in arguments:
+            try:
+                priority_enum = TaskPriority[arguments["priority"].upper()]
+                task.priority = priority_enum
+            except (KeyError, AttributeError):
+                pass  # Invalid priority, skip update
+        
+        # Handle category update
+        if "category" in arguments:
+            try:
+                category_enum = TaskCategory[arguments["category"].upper()]
+                task.category = category_enum
+            except (KeyError, AttributeError):
+                pass  # Invalid category, skip update
+        
+        # Handle due_date update (supports both date and datetime formats)
+        if "due_date" in arguments:
+            due_date_str = arguments["due_date"]
+            if due_date_str:
+                try:
+                    from datetime import datetime as dt
+                    # Try ISO datetime format with fromisoformat (handles "2026-02-21T15:30", "2026-02-21T15:30:00", etc.)
+                    try:
+                        task.due_date = dt.fromisoformat(due_date_str)
+                    except ValueError:
+                        # Try space-separated format "2026-02-21 15:30"
+                        if ' ' in due_date_str:
+                            try:
+                                task.due_date = dt.strptime(due_date_str, "%Y-%m-%d %H:%M:%S")
+                            except ValueError:
+                                task.due_date = dt.strptime(due_date_str, "%Y-%m-%d %H:%M")
+                        else:
+                            # Just a date, set time to start of day
+                            task.due_date = dt.strptime(due_date_str, "%Y-%m-%d")
+                except (ValueError, TypeError):
+                    pass  # Invalid date format, skip update
+            else:
+                task.due_date = None  # Clear due date
 
         task.updated_at = datetime.utcnow()
         db.commit()
@@ -293,7 +376,7 @@ class TaskMCPServer:
 
         return [
             TextContent(
-                type="text", text=f"Task {task.id} updated successfully!"
+                type="text", text=f"Task {task.id} '{task.title}' updated successfully! Priority: {task.priority.value}, Category: {task.category.value}"
             )
         ]
 

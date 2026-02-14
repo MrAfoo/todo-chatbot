@@ -448,7 +448,7 @@ export default function ChatPage() {
                     } animate-fadeIn`}
                   >
                     <div
-                      className={`max-w-[75%] rounded border px-5 py-3 font-mono text-sm ${
+                      className={`max-w-[85%] rounded border px-5 py-3 font-mono text-sm ${
                         msg.role === "user"
                           ? "bg-neon-cyan/10 border-neon-cyan text-neon-cyan shadow-[0_0_10px_rgba(0,255,255,0.3)]"
                           : "bg-terminal-bgLight/80 backdrop-blur-sm border-neon-green/40 text-neon-green shadow-[0_0_10px_rgba(0,255,65,0.2)]"
@@ -506,6 +506,74 @@ export default function ChatPage() {
               ref={inputAreaRef}
               className="p-4 border-t border-neon-cyan/30 bg-terminal-bgLight/90 backdrop-blur-sm"
             >
+              {/* Voice Controls Row - Above message box */}
+              <div className="flex gap-2 mb-3 justify-end">
+                {/* Voice Input Button */}
+                {isVoiceSupported && (
+                  <button
+                    type="button"
+                    onClick={toggleVoiceInput}
+                    disabled={loading}
+                    className={`px-3 py-2 border rounded transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed font-mono text-xs font-semibold flex items-center gap-2 ${
+                      isListening
+                        ? 'bg-neon-pink/20 text-neon-pink border-neon-pink shadow-[0_0_20px_rgba(255,20,147,0.5)] animate-pulse'
+                        : 'bg-neon-green/20 text-neon-green border-neon-green hover:bg-neon-green/30 hover:shadow-[0_0_20px_rgba(0,255,65,0.5)]'
+                    }`}
+                    title={isListening ? "Stop recording" : "Start voice input"}
+                  >
+                    {isListening ? (
+                      <>
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <rect x="6" y="6" width="12" height="12" rx="1" />
+                        </svg>
+                        <span>STOP</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                        </svg>
+                        <span>MIC</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Text-to-Speech Toggle */}
+                {isTTSSupported && (
+                  <button
+                    type="button"
+                    onClick={toggleTextToSpeech}
+                    disabled={loading}
+                    className={`px-3 py-2 border rounded transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed font-mono text-xs font-semibold flex items-center gap-2 ${
+                      isVoiceEnabled
+                        ? 'bg-neon-cyan/20 text-neon-cyan border-neon-cyan shadow-[0_0_20px_rgba(0,255,255,0.5)]'
+                        : 'bg-terminal-border/20 text-neon-green/50 border-terminal-border hover:bg-neon-cyan/10 hover:border-neon-cyan/50'
+                    }`}
+                    title={isVoiceEnabled ? "Disable voice responses" : "Enable voice responses"}
+                  >
+                    {isSpeaking ? (
+                      <>
+                        <svg className="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                        </svg>
+                        <span>SPEAKING</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <path d={isVoiceEnabled 
+                            ? "M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"
+                            : "M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"
+                          }/>
+                        </svg>
+                        <span>{isVoiceEnabled ? 'TTS ON' : 'TTS OFF'}</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+
               <form onSubmit={sendMessage} className="flex gap-3">
                 <div className="flex-1 relative">
                   <span className="absolute left-3 top-3 text-neon-green font-mono text-sm">{'>'}</span>
@@ -519,7 +587,7 @@ export default function ChatPage() {
                       }
                     }}
                     placeholder={isListening ? "Listening..." : "Enter command... (Shift+Enter for new line)"}
-                    rows={1}
+                    rows={2}
                     className="w-full pl-8 pr-4 py-3 bg-terminal-bg/50 border border-neon-green/30 rounded text-neon-green font-mono focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_15px_rgba(0,255,65,0.3)] resize-none placeholder-neon-green/30 transition-all"
                     disabled={loading || isListening}
                   />
@@ -530,71 +598,6 @@ export default function ChatPage() {
                     </div>
                   )}
                 </div>
-                
-                {/* Voice Input Button */}
-                {isVoiceSupported && (
-                  <button
-                    type="button"
-                    onClick={toggleVoiceInput}
-                    disabled={loading}
-                    className={`px-4 py-3 border rounded transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed font-mono font-semibold flex items-center gap-2 ${
-                      isListening
-                        ? 'bg-neon-pink/20 text-neon-pink border-neon-pink shadow-[0_0_20px_rgba(255,20,147,0.5)] animate-pulse'
-                        : 'bg-neon-green/20 text-neon-green border-neon-green hover:bg-neon-green/30 hover:shadow-[0_0_20px_rgba(0,255,65,0.5)]'
-                    }`}
-                    title={isListening ? "Stop recording" : "Start voice input"}
-                  >
-                    {isListening ? (
-                      <>
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                          <rect x="6" y="6" width="12" height="12" rx="1" />
-                        </svg>
-                        <span className="hidden sm:inline">STOP</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                        </svg>
-                        <span className="hidden sm:inline">MIC</span>
-                      </>
-                    )}
-                  </button>
-                )}
-
-                {/* Text-to-Speech Toggle */}
-                {isTTSSupported && (
-                  <button
-                    type="button"
-                    onClick={toggleTextToSpeech}
-                    disabled={loading}
-                    className={`px-4 py-3 border rounded transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed font-mono font-semibold flex items-center gap-2 ${
-                      isVoiceEnabled
-                        ? 'bg-neon-cyan/20 text-neon-cyan border-neon-cyan shadow-[0_0_20px_rgba(0,255,255,0.5)]'
-                        : 'bg-terminal-border/20 text-neon-green/50 border-terminal-border hover:bg-neon-cyan/10 hover:border-neon-cyan/50'
-                    }`}
-                    title={isVoiceEnabled ? "Disable voice responses" : "Enable voice responses"}
-                  >
-                    {isSpeaking ? (
-                      <>
-                        <svg className="w-5 h-5 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-                        </svg>
-                        <span className="hidden sm:inline">SPEAKING</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                          <path d={isVoiceEnabled 
-                            ? "M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"
-                            : "M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"
-                          }/>
-                        </svg>
-                        <span className="hidden sm:inline">{isVoiceEnabled ? 'TTS ON' : 'TTS OFF'}</span>
-                      </>
-                    )}
-                  </button>
-                )}
 
                 <button
                   type="submit"
@@ -620,7 +623,7 @@ export default function ChatPage() {
                 </button>
               </form>
               <p className="text-xs text-neon-green/50 mt-2 text-center font-mono">
-                {isVoiceSupported && '[MIC] for voice input • '}[ENTER] to execute • [SHIFT+ENTER] for new line
+                [ENTER] to execute • [SHIFT+ENTER] for new line
               </p>
             </div>
           </div>

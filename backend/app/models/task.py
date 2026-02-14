@@ -38,7 +38,7 @@ class Task(Base):
     completed = Column(Boolean, default=False, nullable=False)
     priority = Column(SQLEnum(TaskPriority), default=TaskPriority.MEDIUM, nullable=False)
     category = Column(SQLEnum(TaskCategory), default=TaskCategory.OTHER, nullable=False)
-    due_date = Column(Date, nullable=True)
+    due_date = Column(DateTime, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(
