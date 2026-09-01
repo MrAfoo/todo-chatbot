@@ -6,7 +6,7 @@ A modern full-stack web application with **Better Auth** authentication, **AI Ch
 
 This is a production-ready todo application featuring:
 
-- 🤖 **AI Chatbot**: Manage tasks conversationally using Groq's Llama 3.3 70B (FREE!). Also Voice cmd feature enabled!
+- 🤖 **AI Chatbot**: Manage tasks conversationally using Groq Compound (`groq/compound`) (FREE!). Also Voice cmd feature enabled!
 - 🔐 **Better Auth + JWT**: Secure authentication with token-based API access
 - ✅ **Task Management**: Full CRUD operations with user isolation
 - 🧠 **MCP Server**: Model Context Protocol for AI tool integration
@@ -126,7 +126,7 @@ npm run dev
 
 ### Backend
 - **Framework**: FastAPI
-- **AI Provider**: Groq (Llama 3.3 70B) - FREE!
+- **AI Provider**: Groq (`groq/compound`) - FREE!
 - **MCP Server**: Model Context Protocol SDK
 - **Database**: PostgreSQL
 - **ORM**: SQLAlchemy 2.0

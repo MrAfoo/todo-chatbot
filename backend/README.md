@@ -4,7 +4,7 @@ FastAPI backend for the full-stack todo application with JWT authentication, AI 
 
 ## Features
 
-- 🤖 AI-powered chatbot using Groq (Llama 3.3 70B) - FREE!
+- 🤖 AI-powered chatbot using Groq Compound (`groq/compound`) - FREE!
 - 🧠 MCP (Model Context Protocol) server for AI tool integration
 - 🔐 JWT-based authentication (Better Auth compatible)
 - 👤 User registration and login
@@ -149,6 +149,7 @@ BETTER_AUTH_SECRET=your-secret-key-min-32-chars-long
 
 # AI (get free key at https://console.groq.com)
 GROQ_API_KEY=gsk_your_groq_api_key_here
+GROQ_MODEL=groq/compound
 
 # Optional
 DEBUG=True

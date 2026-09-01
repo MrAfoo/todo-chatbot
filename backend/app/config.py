@@ -17,6 +17,7 @@ class Settings(BaseSettings):
 
     # Groq (free AI API)
     groq_api_key: str | None = None
+    groq_model: str = "groq/compound"
     
     # Application
     debug: bool = True

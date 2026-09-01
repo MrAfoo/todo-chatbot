@@ -14,19 +14,20 @@ from app.config import settings
 class AIAgent:
     """AI Agent that uses MCP tools to manage tasks."""
 
-    def __init__(self, api_key: str | None = None):
+    def __init__(self, api_key: str | None = None, model: str | None = None):
         """Initialize the AI Agent with Groq client.
         
         Args:
             api_key: Groq API key. If not provided, will use settings.groq_api_key.
+            model: Groq model name. If not provided, will use settings.groq_model.
         """
         api_key = api_key or settings.groq_api_key
         if not api_key:
             raise ValueError("GROQ_API_KEY must be set in .env file or environment variables")
         
         self.client = Groq(api_key=api_key)
-        # Using Llama 3.3 70B - newest and most capable model on Groq!
-        self.model = "llama-3.3-70b-versatile"
+        # Using Groq Compound AI system model
+        self.model = model or getattr(settings, "groq_model", "groq/compound")
         
         # Get available tools from MCP server
         self.tools = self._get_mcp_tools()
