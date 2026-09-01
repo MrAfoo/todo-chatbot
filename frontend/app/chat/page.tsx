@@ -390,7 +390,7 @@ export default function ChatPage() {
                       <span className="font-mono">CHATBOT</span>
                     </h1>
                     <p className="text-sm text-neon-green/70 font-mono">
-                      {'>'} Powered by groq/compound
+                      {'>'} Powered by qwen/qwen3.8-27b
                     </p>
                   </div>
                 </div>

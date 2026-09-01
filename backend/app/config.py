@@ -15,9 +15,9 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 
-    # Groq (free AI API)
+    # Groq (free AI API - uses tool calling model qwen/qwen3.8-27b)
     groq_api_key: str | None = None
-    groq_model: str = "groq/compound"
+    groq_model: str = "qwen/qwen3.8-27b"
     
     # Application
     debug: bool = True

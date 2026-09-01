@@ -27,14 +27,14 @@ class AIAgent:
         
         self.client = Groq(api_key=api_key)
         self._model = model
+        
+        # Get available tools from MCP server
+        self.tools = self._get_mcp_tools()
 
     @property
     def model(self) -> str:
         """Get the model identifier dynamically from settings or explicit override."""
-        return self._model or getattr(settings, "groq_model", None) or "groq/compound"
-        
-        # Get available tools from MCP server
-        self.tools = self._get_mcp_tools()
+        return self._model or getattr(settings, "groq_model", None) or "qwen/qwen3.8-27b"
 
     def _get_mcp_tools(self) -> list[dict[str, Any]]:
         """Get tools from MCP server and convert to OpenAI format."""
@@ -435,6 +435,9 @@ class AIAgent:
             for tool_call in assistant_message.tool_calls:
                 function_name = tool_call.function.name
                 function_args = json.loads(tool_call.function.arguments)
+                
+                # Filter out null values to prevent tool schema validation mismatches
+                function_args = {k: v for k, v in function_args.items() if v is not None}
                 
                 # Ensure user_id is in the arguments
                 if "user_id" not in function_args:
