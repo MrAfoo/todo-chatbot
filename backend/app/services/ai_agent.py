@@ -26,8 +26,12 @@ class AIAgent:
             raise ValueError("GROQ_API_KEY must be set in .env file or environment variables")
         
         self.client = Groq(api_key=api_key)
-        # Using Groq Compound AI system model
-        self.model = model or getattr(settings, "groq_model", "groq/compound")
+        self._model = model
+
+    @property
+    def model(self) -> str:
+        """Get the model identifier dynamically from settings or explicit override."""
+        return self._model or getattr(settings, "groq_model", None) or "groq/compound"
         
         # Get available tools from MCP server
         self.tools = self._get_mcp_tools()
