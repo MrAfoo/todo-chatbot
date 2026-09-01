@@ -19,6 +19,8 @@ class TaskMCPServer:
 
     def _register_tools(self):
         """Register all MCP tools."""
+        if not hasattr(self.server, "list_tools"):
+            return
 
         @self.server.list_tools()
         async def list_tools() -> list[Tool]:
